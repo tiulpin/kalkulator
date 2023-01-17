@@ -107,4 +107,5 @@ if tax_results.year_net_income > 0:
     show_table(tax_results)
 else:
     st.success("🎉 You are not paying any taxes because you are not earning any money")
+    st.balloons()
 st.caption(DISCLAIMER)

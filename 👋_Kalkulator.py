@@ -26,3 +26,7 @@ st.markdown(
     Go to our GitHub and create a new [GitHub issue](https://github.com/tiulpin/kalkulator/issues/new?assignees=&labels=calculator&template=calculator-request.md&title=)
 """
 )
+
+snow = st.button("Make it snow!")
+if snow:
+    st.snow()
