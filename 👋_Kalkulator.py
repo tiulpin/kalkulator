@@ -18,12 +18,12 @@ st.markdown(
     ### Show me what you've got!
     - Check out salaries in the different countries and regions:
         - 🇳🇱 [Netherlands](/Netherlands_Salary)
-        - 🗿 Other counties coming soon 🇦🇲🇩🇪🇷🇸🇨🇾
+        - 🗿 Other countries coming soon 🇦🇲🇩🇪🇷🇸🇨🇾
     - Calculate whether you should buy a house or rent
     - Find out what's cheaper: buying or leasing a car
         
     ### Submit a calculator request
-    Go to our GitHub and create a new [GitHub issue](https://github.com/tiulpin/kalkulator/issues/new?assignees=&labels=calculator&template=calculator-request.md&title=)
+    Just [drop me a message](https://t.me/tiulpin) and I'll add it to the list.
 """
 )
 

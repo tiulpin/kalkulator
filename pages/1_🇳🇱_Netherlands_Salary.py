@@ -1,19 +1,29 @@
 import pandas as pd  # need this only because of the table shown
 import streamlit as st
 
-from nl_taxes_lib import (
-    WORKING_PERIODS,
-    DEFAULT_SALARY,
-    RULING_TIP,
-    NL_DATA,
-    DISCLAIMER,
+from kalkulators.nl_taxes.calc import (
     TaxesResult,
-    RULING_TYPES,
     TaxCalculator,
+    RULING_TYPES,
+    WORKING_PERIODS,
 )
+from kalkulators.nl_taxes.data import NL_DATA
+
+RULING_URL = (
+    "https://belastingdienst.nl/wps/wcm/connect/en/individuals/content/"
+    "coming-to-work-in-the-netherlands-30-percent-facility"
+)
+DEFAULT_SALARY = 60000.00
+DEFAULT_WORKING_HOURS = 40
+
+DISCLAIMER = (
+    "💡 **Disclaimer:** This is a demo app. The numbers may not be accurate. "
+    "Consult a tax advisor for more information."
+)
+RULING_TIP = f"More information about the 30% ruling [🔗here]({RULING_URL})"
 
 
-def show_metrics(t: TaxesResult):
+def show_metrics(t: TaxesResult) -> None:
     def display_metric(block, title, value, key):
         delta = (value - st.session_state[key]) if key in st.session_state else 0
         display_value = f"{value:,.2f} €"
@@ -94,6 +104,8 @@ calc = TaxCalculator(
     working_hours=hours,
     social_security=social_security,
     holiday_allowance=holiday_allowance_included,
+    tax_data=NL_DATA,
+    working_periods=WORKING_PERIODS,
 )
 tax_results = calc.calculate()
 show_metrics(tax_results)
@@ -102,4 +114,5 @@ if tax_results.year_net_income > 0:
 else:
     st.success("🎉 You are not paying any taxes because you are not earning any money")
     st.balloons()
+
 st.caption(DISCLAIMER)
