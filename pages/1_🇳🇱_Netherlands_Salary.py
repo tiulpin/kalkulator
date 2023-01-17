@@ -14,31 +14,23 @@ from nl_taxes_lib import (
 
 
 def show_metrics(t: TaxesResult):
+    def display_metric(block, title, value, key):
+        delta = (value - st.session_state[key]) if key in st.session_state else 0
+        display_value = f"{value:,.2f} €"
+        if delta != 0:
+            display_delta = (
+                f"{delta:.2f} € more" if delta > 0 else f"{delta:.2f} € less"
+            )
+            block.metric(title, display_value, display_delta)
+        else:
+            block.metric(title, display_value)
+        st.session_state[key] = value
+
     st.markdown("#### Total Net Income")
     main_col1, main_col2, main_col3 = st.columns(3)
-
-    if 'year_prev_net' in st.session_state:
-        year_net_income_delta = (t.year_net_income - st.session_state.year_prev_net)
-    else:
-        year_net_income_delta = 0
-
-    if 'month_prev_net' in st.session_state:
-        month_net_income_delta = (t.month_net_income - st.session_state.month_prev_net)
-    else:
-        month_net_income_delta = 0
-
-    if 'hour_prev_net' in st.session_state:
-        hour_net_income_delta = (t.hour_net_income - st.session_state.hour_prev_net)
-    else:
-        hour_net_income_delta = 0
-
-    st.session_state['year_prev_net'] = t.year_net_income
-    st.session_state['month_prev_net'] = t.month_net_income
-    st.session_state['hour_prev_net'] = t.hour_net_income
-
-    main_col1.metric("Per Year", f"{t.year_net_income:,.2f} €", f"{year_net_income_delta:,.2f}")
-    main_col2.metric("Per Month", f"{t.month_net_income:,.2f} €", f"{month_net_income_delta:,.2f}")
-    main_col3.metric("Per Hour", f"{t.hour_net_income:,.2f} €", f"{hour_net_income_delta:,.2f}")
+    display_metric(main_col1, "Per Year", t.year_net_income, "year_prev_net")
+    display_metric(main_col2, "Per Month", t.month_net_income, "month_prev_net")
+    display_metric(main_col3, "Per Hour", t.hour_net_income, "hour_prev_net")
 
 
 def show_table(t: TaxesResult) -> None:
@@ -72,7 +64,9 @@ st.title("🇳🇱 Netherlands Salary")
 st.caption("Calculate how much money you get after the taxes")
 
 income_col, period_col = st.columns(2)
-income = income_col.number_input("Income in EUR", value=DEFAULT_SALARY, min_value=0.0, step=1000.0)
+income = income_col.number_input(
+    "Income in EUR", value=DEFAULT_SALARY, min_value=0.0, step=1000.0
+)
 period = period_col.selectbox("Period", WORKING_PERIODS)
 ruling = st.checkbox("30% facility", help=RULING_TIP, value=True)
 ruling_type = "Normal"

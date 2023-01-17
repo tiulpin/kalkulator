@@ -1,18 +1,19 @@
 from dataclasses import dataclass
 import math
 
-DISCLAIMER = (
-    "💡 **Disclaimer:** This is a demo app. The numbers may not be accurate. "
-    "Consult a tax advisor for more information."
-)
 RULING_URL = (
     "https://belastingdienst.nl/wps/wcm/connect/en/individuals/content/"
     "coming-to-work-in-the-netherlands-30-percent-facility"
 )
-RULING_TIP = f"More information about the 30% ruling [🔗here]({RULING_URL})"
 DEFAULT_SALARY = 60000.00
 DEFAULT_WORKING_HOURS = 40
-WORKING_PERIODS = ["year", "month", "day", "hour"]
+
+DISCLAIMER = (
+    "💡 **Disclaimer:** This is a demo app. The numbers may not be accurate. "
+    "Consult a tax advisor for more information."
+)
+RULING_TIP = f"More information about the 30% ruling [🔗here]({RULING_URL})"
+WORKING_PERIODS = ("year", "month", "day", "hour")
 RULING_TYPES = {
     "Normal": "normal",
     "Young Employee with Master's": "young",
@@ -579,7 +580,7 @@ class TaxCalculator:
         """
 
         # Calculation part
-        salary_by_period = dict.fromkeys(("year", "month", "day", "hour"), 0)
+        salary_by_period = dict.fromkeys(WORKING_PERIODS, 0)
         salary_by_period[self._period] = self._salary
 
         gross_year = salary_by_period["year"]
@@ -672,5 +673,5 @@ class TaxCalculator:
             social_security_tax=social_tax,
             general_tax_credit=general_credit,
             labour_tax_credit=labour_credit,
-            hour_net_income=hour_net_income
+            hour_net_income=hour_net_income,
         )
