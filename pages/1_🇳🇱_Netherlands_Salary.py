@@ -15,7 +15,29 @@ RULING_URL = (
 )
 DEFAULT_SALARY = 60000.00
 DEFAULT_WORKING_HOURS = 40
+NO_TAXES_MESSAGE = (
+    "🎉 You are not paying any taxes because you are not earning any money"
+)
+EXPLANATIONS_TITLE = "The calculations are incorrect, what should I do?"
+EXPLANATIONS = """#### 🤔 What are the formulas and how the calculator works?
+The calculations are perfectly explained in 🔗[the article](https://www.iamexpat.nl/expat-info/taxation/dutch-tax-system).
 
+
+#### 🤑 Your employee pays you some benefits or charges for something else
+It could be a parking space you must pay for yourself. It could be the lunch allowance, insurance coverage, or travel 
+allowance you get additionally. Just look inside your payslips. 
+Given that the situation is different for every company, this calculator does only one job: 
+approximate your annual income.
+
+#### 👮 You might be eligible for a tax refund if you didn't work the entire year
+When you get your salary, you pay taxes based on your annual income (from the contract), but when you work only for 
+part of the year, your actual payment might be lower than your expected yearly income. 
+That is why you could get a refund from the tax services; you will have to fill in the tax declaration. 
+More information about filling out the declaration can be found 🔗[here](https://www.iamexpat.nl/expat-info/taxation/annual-dutch-tax-form).
+
+#### 🤷 The stupid developer made a mistake
+If you think that the calculator is wrong, please 🔗[drop me a message](https://t.me/tiulpin), and I will fix it as soon as possible.
+"""
 DISCLAIMER = (
     "💡 **Disclaimer:** This is a demo app. The numbers may not be accurate. "
     "Consult a tax advisor for more information."
@@ -112,7 +134,10 @@ show_metrics(tax_results)
 if tax_results.year_net_income > 0:
     show_table(tax_results)
 else:
-    st.success("🎉 You are not paying any taxes because you are not earning any money")
+    st.success(NO_TAXES_MESSAGE)
     st.balloons()
+
+with st.expander(EXPLANATIONS_TITLE):
+    st.markdown(EXPLANATIONS)
 
 st.caption(DISCLAIMER)
