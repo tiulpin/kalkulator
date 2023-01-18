@@ -116,7 +116,7 @@ with tab_employed:
         first_col, second_col = st.columns(2)
         year = first_col.selectbox("Year", list(reversed(NL_DATA["years"])))
         hours = second_col.number_input(
-            "Weekly working hours", value=NL_DATA["defaultWorkingHours"], min_value=1
+            "Weekly working hours", value=NL_DATA["defaultWorkingHours"], min_value=1, max_value=168
         )
         holiday_allowance_included = st.checkbox(
             "Holiday allowance included", value=True
