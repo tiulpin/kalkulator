@@ -6,7 +6,7 @@ from typing import List
 WORKING_PERIODS = ("year", "month", "day", "hour")
 RULING_TYPES = {
     "Normal": "normal",
-    "Young Employee with Master's": "young",
+    "Young & Master's": "young",
     "Research": "research",
     "None": "none",
 }

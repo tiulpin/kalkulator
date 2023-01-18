@@ -44,7 +44,20 @@ DISCLAIMER = (
     "💡 **Disclaimer:** This is a demo app. The numbers may not be accurate. "
     "Consult a tax advisor for more information."
 )
-RULING_TIP = f"More information about the 30% ruling 🔗[here]({RULING_URL})"
+RULING_TIP = f"Dutch tax benefit when 30% of your salary is not taxed. [More info about the 30% ruling]({RULING_URL})"
+HOLIDAY_ALLOWANCE_TIP = """Your contract describes whether it's included in the salary. 
+[More info about the holiday allowance](https://business.gov.nl/regulation/holiday-allowance/)
+"""
+
+
+def get_ruling_type_help(rul_year):
+    return f"""
+There are multiple conditions on the tax benefit depending on what type you choose:
+
+- **Normal**: salary more than **{NL_DATA["rulingThreshold"][rul_year]["normal"]:,.2f} €**
+- **Young & Master's**: salary more than **{NL_DATA["rulingThreshold"][rul_year]["young"]:,.2f} €** and you are less than 30 y.o.  
+- **Research**: salary does not matter if working with scientific research 
+"""
 
 
 def show_metrics(t: TaxesResult) -> None:
@@ -91,7 +104,7 @@ def show_table(t: TaxesResult) -> None:
 
 st.set_page_config(page_title="Netherlands: Salary", page_icon="🇳🇱")
 st.title("🇳🇱 Netherlands: Salary")
-st.caption("Calculate how much money you get after the taxes")
+st.caption("Approximate how much money you get after the taxes")
 
 tab_employed, tab_semployed = st.tabs(["Employed", "Self-employed"])
 
@@ -104,38 +117,43 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 with tab_employed:
-    income_col, period_col = st.columns(2)
-    income = income_col.number_input(
-        "Income in EUR", value=DEFAULT_SALARY, min_value=0.0, step=1000.0
+    left_col, right_col = st.columns(2)
+    salary = left_col.number_input(
+        "Salary in EUR", value=DEFAULT_SALARY, min_value=0.0, step=1000.0
     )
-    period = period_col.selectbox("Period", WORKING_PERIODS)
-    ruling = st.checkbox("30% facility", help=RULING_TIP, value=True)
-    ruling_type = "Normal"
+    ruling = left_col.checkbox("30% facility", help=RULING_TIP, value=True)
+    holiday_allowance_included = left_col.checkbox(
+        "Holiday allowance included", value=True, help=HOLIDAY_ALLOWANCE_TIP
+    )
+    period = right_col.radio("Working period", WORKING_PERIODS)
 
     with st.expander("Advanced options"):
-        first_col, second_col = st.columns(2)
+        first_col, second_col, third_col = st.columns(3)
         year = first_col.selectbox("Year", list(reversed(NL_DATA["years"])))
         hours = second_col.number_input(
-            "Weekly working hours", value=NL_DATA["defaultWorkingHours"], min_value=1, max_value=168
+            "Weekly working hours",
+            value=NL_DATA["defaultWorkingHours"],
+            min_value=1,
+            max_value=168,
         )
-        holiday_allowance_included = st.checkbox(
-            "Holiday allowance included", value=True
-        )
-        social_security = st.checkbox("Social security", value=True)
         old_age = st.checkbox("66 years or older", value=False)
         if ruling:
-            ruling_type = st.selectbox("Ruling Type", RULING_TYPES.keys())
+            ruling_type = third_col.selectbox(
+                "Ruling Type",
+                list(RULING_TYPES.keys())[:-1],
+                help=get_ruling_type_help(year),
+            )
         else:
             ruling_type = "None"
 
     calc = TaxCalculator(
-        salary=income,
+        salary=salary,
         old_age=old_age,
         year=year,
         ruling=ruling_type,
         period=period,
         working_hours=hours,
-        social_security=social_security,
+        social_security=True,
         holiday_allowance=holiday_allowance_included,
         tax_data=NL_DATA,
         working_periods=WORKING_PERIODS,
