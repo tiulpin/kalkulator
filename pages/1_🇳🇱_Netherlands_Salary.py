@@ -72,8 +72,6 @@ def show_table(t: TaxesResult) -> None:
         {
             "EUR": [
                 t.taxable_income,
-                t.year_net_income,
-                t.month_net_income,
                 t.payroll_tax,
                 t.social_security_tax,
                 t.general_tax_credit,
@@ -82,8 +80,6 @@ def show_table(t: TaxesResult) -> None:
         },
         index=[
             "Taxable Income",
-            "Year Net Income",
-            "Month Net Income",
             "Payroll Tax",
             "Social Security Tax",
             "General Tax Credit",
