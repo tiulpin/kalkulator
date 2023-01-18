@@ -1,9 +1,8 @@
 import math
 from dataclasses import dataclass
 
-from typing import List
+from kalkulators.taxes.common import get_rates
 
-WORKING_PERIODS = ("year", "month", "day", "hour")
 RULING_TYPES = {
     "Normal": "normal",
     "Young & Master's": "young",
@@ -13,7 +12,7 @@ RULING_TYPES = {
 
 
 @dataclass
-class TaxesResult:
+class DutchTaxesResult:
     year_net_income: float
     taxable_income: float
     month_net_income: float
@@ -24,7 +23,7 @@ class TaxesResult:
     hour_net_income: float
 
 
-class TaxCalculator:
+class DutchTaxCalculator:
     """
     Tax calculator.
     Get user input data, base government tax data
@@ -98,7 +97,7 @@ class TaxCalculator:
             Payroll tax value.
 
         """
-        return self.get_rates(
+        return get_rates(
             brackets=self._tax_data["payrollTax"][year], salary=salary, rate_type="rate"
         )
 
@@ -116,7 +115,7 @@ class TaxCalculator:
             (Number): Social tax value.
 
         """
-        return self.get_rates(
+        return get_rates(
             brackets=self._tax_data["socialPercent"][year],
             salary=salary,
             rate_type="older" if age else "social",
@@ -135,7 +134,7 @@ class TaxCalculator:
             (Number): General credit value.
 
         """
-        return self.get_rates(
+        return get_rates(
             brackets=self._tax_data["generalCredit"][year],
             salary=salary,
             rate_type="rate",
@@ -154,7 +153,7 @@ class TaxCalculator:
             (Number): Labour credit value.
 
         """
-        return self.get_rates(
+        return get_rates(
             brackets=self._tax_data["labourCredit"][year],
             salary=salary,
             rate_type="rate",
@@ -190,47 +189,12 @@ class TaxCalculator:
 
         return percentage
 
-    @staticmethod
-    def get_rates(brackets: List[dict], salary: float, rate_type: str) -> float:
-        """
-        Helper method to calculate rates
-        for Payroll Tax, Social Tax, General Credit, Labour Credit.
-
-        Args:
-            brackets (list[dict]): Data brackets by year with min, max and rate values.
-            salary (Number): Salary value.
-            rate_type (str): Rate type: "rate", "older", "social".
-
-        Returns:
-            (Number): Calculated amount.
-
-        """
-        amount = 0
-
-        for bracket in brackets:
-            delta = bracket["max"] - bracket["min"] if "max" in bracket else math.inf
-            tax = bracket.get(rate_type, "rate")
-            is_percent_valid = -1 < tax < 1 and tax != 0
-
-            if salary <= delta:
-                amount = (
-                    amount + round((salary * 100 * tax) / 100, 2)
-                    if is_percent_valid
-                    else tax
-                )
-                break
-            else:
-                amount = amount + (delta * tax) if is_percent_valid else tax
-                salary -= delta
-
-        return amount
-
-    def calculate(self) -> TaxesResult:
+    def calculate(self) -> DutchTaxesResult:
         """
         Main calculation method.
 
         Returns:
-            (TaxesResult): Calculation results.
+            (DutchTaxesResult): Calculation results.
 
         """
         salary_by_period = dict.fromkeys(self._working_periods, 0)
@@ -296,7 +260,7 @@ class TaxCalculator:
         )
         income_tax = income_tax if income_tax < 0 else 0
 
-        net_year = taxable_year + income_tax + tax_free_year
+        year_net_income = taxable_year + income_tax + tax_free_year
 
         # holiday allowance: math.floor(net_year * (0.08 / 1.08)) if self._holiday_allowance else 0
         # day income: math.floor(net_year / NL_DATA["workingDays"])
@@ -311,13 +275,13 @@ class TaxCalculator:
         # result["calculated_ruling_percentage"] = math.floor(tax_free_year / gross_year * 100)
         # result["calculated_taxable_income"] = taxable_year
 
-        month_net_income = math.floor(net_year / 12)
+        month_net_income = math.floor(year_net_income / 12)
         hour_net_income = math.floor(
-            net_year / (self._tax_data["workingWeeks"] * self._working_hours)
+            year_net_income / (self._tax_data["workingWeeks"] * self._working_hours)
         )
 
-        return TaxesResult(
-            year_net_income=net_year,
+        return DutchTaxesResult(
+            year_net_income=year_net_income,
             taxable_income=taxable_year,
             month_net_income=month_net_income,
             payroll_tax=payroll_tax,

@@ -2,26 +2,41 @@ import pandas as pd  # need this only because of the table shown
 import streamlit as st
 
 from kalkulators.taxes.common import WORKING_PERIODS
-from kalkulators.taxes.nl_calc import (
-    DutchTaxesResult,
-    DutchTaxCalculator,
-    RULING_TYPES,
+from kalkulators.taxes.cy_calc import (
+    CyprusTaxesResult,
+    CyprusTaxCalculator,
 )
-from kalkulators.taxes.nl_data import NL_DATA
+from kalkulators.taxes.cy_data import CY_DATA
 
-RULING_URL = (
-    "https://belastingdienst.nl/wps/wcm/connect/en/individuals/content/"
-    "coming-to-work-in-the-netherlands-30-percent-facility"
-)
-DEFAULT_SALARY = 60000.00
+RULING_URL = "https://www.pwc.com.cy/en/publications/assets/dtu-n8-2022.pdf"
+DEFAULT_SALARY = 36000.00
 DEFAULT_WORKING_HOURS = 40
 NO_TAXES_MESSAGE = (
     "🎉 You are not paying any taxes because you are not earning any money"
 )
 EXPLANATIONS_TITLE = "The calculations are incorrect, what should I do?"
 EXPLANATIONS = """#### 🤔 What are the formulas and how the calculator works?
-The calculations are perfectly explained in 
-[iamexpat.nl article](https://www.iamexpat.nl/expat-info/taxation/dutch-tax-system).
+1. You have to pay 2.65% to National Health Service and 8.3% for the Social insurance.
+2. Then your salary is taxed by the payroll tax (progressive): depending on how big is your salary the different tax rate applies to you.
+
+Also, it's possible to get a tax benefit (an exemption) on Cyprus if you are working there for the first time in your life.
+It means that 20% (or 50%) if your income won't be taxed at all.
+
+So the total tax is calculated the following way:
+```
+taxable_year = salary - social_tax - nhs_tax
+payroll_tax(taxable_year)
+```
+
+Here are the bands for the payroll tax the last year:
+
+| Taxable income band EUR	  | National income tax rates     |
+|-----------------------------|------------------------------:|
+| 0 to 19,500                 | 0%                            |
+| 19,501 to 28,000            | 20%                           |
+| 28,001 to 36,300            | 25%                           |
+| 36,301 to 60,000            | 30%                           |
+| 60,000 and more             | 35%                           |
 
 
 #### 🤑 Your employee pays you some benefits or charges for something else
@@ -30,12 +45,6 @@ allowance you get additionally. Just look inside your payslips.
 Given that the situation is different for every company, this calculator does only one job: 
 approximate your annual income.
 
-#### 👮 You might be eligible for a tax refund if you didn't work the entire year
-When you get your salary, you pay taxes based on your annual income (from the contract), but when you work only for 
-part of the year, your actual payment might be lower than your expected yearly income. 
-That is why you could get a refund from the tax services; you will have to fill in the tax declaration. 
-More information about filling out the declaration can be found in 
-[iamexpat.nl article](https://www.iamexpat.nl/expat-info/taxation/annual-dutch-tax-form).
 
 #### 🤷 The stupid developer made a mistake
 If you think that the calculator is wrong, please [drop me a message](https://t.me/tiulpin), and I will fix it as soon as possible.
@@ -44,23 +53,10 @@ DISCLAIMER = (
     "💡 **Disclaimer:** This is a demo app. The numbers may not be accurate. "
     "Consult a tax advisor for more information."
 )
-RULING_TIP = f"Dutch tax benefit when 30% of your salary is not taxed. [More info about the 30% ruling]({RULING_URL})"
-HOLIDAY_ALLOWANCE_TIP = """Your contract describes whether it's included in the salary. 
-[More info about the holiday allowance](https://business.gov.nl/regulation/holiday-allowance/)
-"""
+RULING_TIP = f"Cyprus tax benefit when 20% (or 50%) of your salary is not taxed. [More info about the exemption]({RULING_URL})"
 
 
-def get_ruling_type_help(rul_year):
-    return f"""
-There are multiple conditions on the tax benefit depending on what type you choose:
-
-- **Normal**: salary more than **{NL_DATA["rulingThreshold"][rul_year]["normal"]:,.2f} €**
-- **Young & Master's**: salary more than **{NL_DATA["rulingThreshold"][rul_year]["young"]:,.2f} €** and you are less than 30 y.o.  
-- **Research**: salary does not matter if working with scientific research 
-"""
-
-
-def show_metrics(t: DutchTaxesResult) -> None:
+def show_metrics(t: CyprusTaxesResult) -> None:
     def display_metric(block, title, value, key):
         delta = (value - st.session_state[key]) if key in st.session_state else 0
         display_value = f"{value:,.2f} €"
@@ -80,30 +76,23 @@ def show_metrics(t: DutchTaxesResult) -> None:
     display_metric(main_col3, "Per Hour", t.hour_net_income, "hour_prev_net")
 
 
-def show_table(t: DutchTaxesResult) -> None:
+def show_table(t: CyprusTaxesResult) -> None:
     data = pd.DataFrame(
         {
-            "EUR / YEAR": [
-                t.taxable_income,
-                t.payroll_tax,
-                t.social_security_tax,
-                t.general_tax_credit,
-                t.labour_tax_credit,
-            ],
+            "EUR / YEAR": [t.social_tax, t.nhs_tax, t.taxable_income, t.payroll_tax],
         },
         index=[
+            "Social Insurance Tax",
+            "National Health Services Tax",
             "Taxable Income",
             "Payroll Tax",
-            "Social Security Tax",
-            "General Tax Credit",
-            "Labour Tax Credit",
         ],
     )
     st.table(data.style.format("{:,.2f}"))
 
 
-st.set_page_config(page_title="Netherlands: Salary", page_icon="🇳🇱")
-st.title("🇳🇱 Netherlands: Salary")
+st.set_page_config(page_title="Cyprus: Salary", page_icon="🇨🇾")
+st.title("🇨🇾 Cyprus: Salary")
 st.caption("Approximate how much money you get after the taxes")
 
 tab_employed, tab_semployed = st.tabs(["Employed", "Self-employed"])
@@ -127,41 +116,26 @@ with tab_employed:
         step=1000.0,
     )
     st.session_state["salary"] = salary
-    ruling = left_col.checkbox("30% facility", help=RULING_TIP, value=True)
-    holiday_allowance_included = left_col.checkbox(
-        "Holiday allowance included", value=True, help=HOLIDAY_ALLOWANCE_TIP
-    )
+    ruling = left_col.checkbox("Payroll Tax exemption", help=RULING_TIP, value=True)
     period = right_col.radio("Working period", WORKING_PERIODS)
 
     with st.expander("Advanced options"):
         first_col, second_col, third_col = st.columns(3)
-        year = first_col.selectbox("Year", list(reversed(NL_DATA["years"])))
+        year = first_col.selectbox("Year", list(reversed(CY_DATA["years"])))
         hours = second_col.number_input(
             "Weekly working hours",
-            value=NL_DATA["defaultWorkingHours"],
+            value=CY_DATA["defaultWorkingHours"],
             min_value=1,
             max_value=168,
         )
-        old_age = st.checkbox("66 years or older", value=False)
-        if ruling:
-            ruling_type = third_col.selectbox(
-                "Ruling Type",
-                list(RULING_TYPES.keys())[:-1],
-                help=get_ruling_type_help(year),
-            )
-        else:
-            ruling_type = "None"
 
-    calc = DutchTaxCalculator(
+    calc = CyprusTaxCalculator(
         salary=salary,
-        old_age=old_age,
         year=year,
-        ruling=ruling_type,
+        ruling=ruling,
         period=period,
         working_hours=hours,
-        social_security=True,
-        holiday_allowance=holiday_allowance_included,
-        tax_data=NL_DATA,
+        tax_data=CY_DATA,
         working_periods=WORKING_PERIODS,
     )
     tax_results = calc.calculate()
