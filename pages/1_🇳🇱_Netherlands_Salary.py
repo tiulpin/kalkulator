@@ -86,7 +86,7 @@ def show_table(t: TaxesResult) -> None:
             "Labour Tax Credit",
         ],
     )
-    st.table(data.style.format("{:.2f}"))
+    st.table(data.style.format("{:,.2f}"))
 
 
 st.set_page_config(page_title="Netherlands: Salary", page_icon="🇳🇱")
@@ -94,6 +94,14 @@ st.title("🇳🇱 Netherlands: Salary")
 st.caption("Calculate how much money you get after the taxes")
 
 tab_employed, tab_semployed = st.tabs(["Employed", "Self-employed"])
+
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 with tab_employed:
     income_col, period_col = st.columns(2)
@@ -110,7 +118,9 @@ with tab_employed:
         hours = second_col.number_input(
             "Weekly working hours", value=NL_DATA["defaultWorkingHours"], min_value=1
         )
-        holiday_allowance_included = st.checkbox("Holiday allowance included", value=True)
+        holiday_allowance_included = st.checkbox(
+            "Holiday allowance included", value=True
+        )
         social_security = st.checkbox("Social security", value=True)
         old_age = st.checkbox("66 years or older", value=False)
         if ruling:
@@ -139,10 +149,12 @@ with tab_employed:
         st.balloons()
 
 with tab_semployed:
-    st.markdown("""
+    st.markdown(
+        """
     ### Coming soon...
     
-    Meanwhile, you can watch the following relaxing video:""")
+    Meanwhile, you can watch the following relaxing video:"""
+    )
     st.video("https://www.youtube.com/watch?v=3FMyeGw6Tn0")
 
 with st.expander(EXPLANATIONS_TITLE):
