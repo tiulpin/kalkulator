@@ -10,6 +10,7 @@ from kalkulators.taxes.cy_data import CY_DATA, RULING_TYPES
 
 RULING_URL = "https://www.taxathand.com/article/26684/Cyprus/2022/Enhanced-tax-exemptions-for-employment-income-introduced-to-attract-foreign-talent-"
 DEFAULT_SALARY = 36000.00
+RULING_50_THRESHOLD = 55000.00
 DEFAULT_WORKING_HOURS = 40
 NO_TAXES_MESSAGE = (
     "🎉 You are not paying any taxes because you are not earning any money"
@@ -113,7 +114,7 @@ with tab_employed:
         min_value=0.0,
         step=1000.0,
     )
-    ruling_types = RULING_TYPES if salary > 55000 else RULING_TYPES[:-1]
+    ruling_types = RULING_TYPES if salary >= RULING_50_THRESHOLD else RULING_TYPES[:-1]
     ruling = left_col.radio("Payroll Tax exemption", ruling_types, help=RULING_TIP)
     period = right_col.radio("Working period", WORKING_PERIODS)
 
