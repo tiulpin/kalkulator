@@ -6,9 +6,9 @@ from kalkulators.taxes.cy_calc import (
     CyprusTaxesResult,
     CyprusTaxCalculator,
 )
-from kalkulators.taxes.cy_data import CY_DATA
+from kalkulators.taxes.cy_data import CY_DATA, RULING_TYPES
 
-RULING_URL = "https://www.pwc.com.cy/en/publications/assets/dtu-n8-2022.pdf"
+RULING_URL = "https://www.taxathand.com/article/26684/Cyprus/2022/Enhanced-tax-exemptions-for-employment-income-introduced-to-attract-foreign-talent-"
 DEFAULT_SALARY = 36000.00
 DEFAULT_WORKING_HOURS = 40
 NO_TAXES_MESSAGE = (
@@ -113,7 +113,8 @@ with tab_employed:
         min_value=0.0,
         step=1000.0,
     )
-    ruling = left_col.checkbox("Payroll Tax exemption", help=RULING_TIP, value=True)
+    ruling_types = RULING_TYPES if salary > 55000 else RULING_TYPES[:-1]
+    ruling = left_col.radio("Payroll Tax exemption", ruling_types, help=RULING_TIP)
     period = right_col.radio("Working period", WORKING_PERIODS)
 
     with st.expander("Advanced options"):

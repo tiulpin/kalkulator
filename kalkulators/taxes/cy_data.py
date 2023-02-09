@@ -1,3 +1,4 @@
+RULING_TYPES = ["0%", "20%", "50%"]
 CY_DATA = {
     "currentYear": "2023",
     "years": ["2022", "2023"],

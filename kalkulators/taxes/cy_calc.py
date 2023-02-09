@@ -135,13 +135,11 @@ class CyprusTaxCalculator:
         nhs_tax = -1 * self.get_nhs_tax(self._year, salary=taxable_year)
         taxable_year += social_tax + nhs_tax
 
-        if self._ruling:
-            ruling_income = self._tax_data["rulingThreshold"][self._year]["normal"]
-            tax_free_year = (
-                taxable_year * 0.5
-                if taxable_year > ruling_income
-                else taxable_year * 0.2
-            )
+        if self._ruling != "0%":
+            if self._ruling == "20%":
+                tax_free_year = taxable_year * 0.2
+            elif self._ruling == "50%":
+                tax_free_year = taxable_year * 0.5
             taxable_year -= tax_free_year
 
         income_tax = math.floor(
