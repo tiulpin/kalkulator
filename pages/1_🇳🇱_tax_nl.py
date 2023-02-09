@@ -120,13 +120,10 @@ with tab_employed:
     left_col, right_col = st.columns(2)
     salary = left_col.number_input(
         "Salary in EUR",
-        value=DEFAULT_SALARY
-        if "salary" not in st.session_state
-        else st.session_state["salary"],
+        value=DEFAULT_SALARY,
         min_value=0.0,
         step=1000.0,
     )
-    st.session_state["salary"] = salary
     ruling = left_col.checkbox("30% facility", help=RULING_TIP, value=True)
     holiday_allowance_included = left_col.checkbox(
         "Holiday allowance included", value=True, help=HOLIDAY_ALLOWANCE_TIP
